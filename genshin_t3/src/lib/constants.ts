@@ -112,5 +112,7 @@ export const artifactConfig = {
     "Night of the Sky's Unveiling",
     "A Day Carved From Rising Winds",
     "Aubade of Morningstar and Moon",
+    "Celestial Gift",
+    "Disenchantment in Deep Shadow",
   ],
 };
