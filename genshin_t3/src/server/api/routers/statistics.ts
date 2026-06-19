@@ -198,6 +198,52 @@ export const statisticsRouter = createTRPCRouter({
       return result;
     }),
 
+  getRollDistributionData: protectedProcedure
+    .input(
+      z.object({
+        set: z.string().nullable().optional(),
+        type: z.string(),
+        mainStat: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const conditions = [
+        eq(artifactItself.userId, ctx.session.user.id),
+        eq(artifactItself.type, input.type),
+        eq(artifactItself.mainStat, input.mainStat),
+      ];
+      if (input.set) {
+        conditions.push(eq(artifactItself.set, input.set));
+      }
+
+      return await ctx.db
+        .select({
+          hp: artifactItself.hp,
+          atk: artifactItself.atk,
+          def: artifactItself.def,
+          percentHP: artifactItself.percentHP,
+          percentATK: artifactItself.percentATK,
+          percentDEF: artifactItself.percentDEF,
+          er: artifactItself.er,
+          em: artifactItself.em,
+          critRate: artifactItself.critRate,
+          critDMG: artifactItself.critDMG,
+          lHP: artifactLeveling.lHP,
+          lATK: artifactLeveling.lATK,
+          lDEF: artifactLeveling.lDEF,
+          lPercentHP: artifactLeveling.lPercentHP,
+          lPercentATK: artifactLeveling.lPercentATK,
+          lPercentDEF: artifactLeveling.lPercentDEF,
+          lEM: artifactLeveling.lEM,
+          lER: artifactLeveling.lER,
+          lCritRate: artifactLeveling.lCritRate,
+          lCritDMG: artifactLeveling.lCritDMG,
+        })
+        .from(artifactLeveling)
+        .innerJoin(artifactItself, eq(artifactLeveling.id, artifactItself.id))
+        .where(and(...conditions));
+    }),
+
   getAvailableSets: protectedProcedure.query(async ({ ctx }) => {
     const sets = await ctx.db
       .selectDistinct({ set: artifactItself.set })

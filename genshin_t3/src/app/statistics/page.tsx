@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import { MainStatSection } from './_components/MainStatSection';
 import { SubstatSection } from './_components/SubstatSection';
 import { LevelingSection } from './_components/LevelingSection';
+import { RollDistributionSection } from './_components/RollDistributionSection';
 
 const customStyles = {
   control: (provided: CSSObjectWithLabel) => ({
@@ -72,7 +73,7 @@ export default function StatisticsPage() {
 
   const { data: levelingData, isLoading: isLoadingLeveling } = api.statistics.getLevelingStats.useQuery(
     { set: selectedSet },
-    { enabled: selectedCategory === 'Leveling' }
+    { enabled: selectedCategory === 'Leveling' || selectedCategory === 'Roll Distribution' }
   );
 
   const renderContent = () => {
@@ -102,6 +103,14 @@ export default function StatisticsPage() {
         return (
           <LevelingSection
             levelingData={levelingData ?? []}
+            isLoading={isLoadingLeveling}
+          />
+        );
+      case 'Roll Distribution':
+        return (
+          <RollDistributionSection
+            levelingData={levelingData ?? []}
+            selectedSet={selectedSet}
             isLoading={isLoadingLeveling}
           />
         );
@@ -173,6 +182,7 @@ export default function StatisticsPage() {
               { id: 'Main Stat' },
               { id: 'Substats' },
               { id: 'Leveling' },
+              { id: 'Roll Distribution' },
             ].map((category) => (
               <button
                 key={category.id}
