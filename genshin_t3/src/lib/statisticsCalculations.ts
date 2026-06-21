@@ -289,9 +289,14 @@ export interface ArtifactRollDataItem {
   lER: number | null;
   lCritRate: number | null;
   lCritDMG: number | null;
+  unactivatedSubstat: string | null;
+  addedSubstat: string | null;
 }
 
-const SUBSTAT_TO_PRESENCE_KEY: Record<string, keyof ArtifactRollDataItem> = {
+type ArtifactPresenceKey = 'hp' | 'atk' | 'def' | 'percentHP' | 'percentATK' | 'percentDEF' | 'er' | 'em' | 'critRate' | 'critDMG';
+type ArtifactRollKey = 'lHP' | 'lATK' | 'lDEF' | 'lPercentHP' | 'lPercentATK' | 'lPercentDEF' | 'lER' | 'lEM' | 'lCritRate' | 'lCritDMG';
+
+const SUBSTAT_TO_PRESENCE_KEY: Record<string, ArtifactPresenceKey> = {
   'HP': 'hp',
   'ATK': 'atk',
   'DEF': 'def',
@@ -304,7 +309,7 @@ const SUBSTAT_TO_PRESENCE_KEY: Record<string, keyof ArtifactRollDataItem> = {
   'Crit DMG': 'critDMG',
 };
 
-const SUBSTAT_TO_ROLL_KEY: Record<string, keyof ArtifactRollDataItem> = {
+const SUBSTAT_TO_ROLL_KEY: Record<string, ArtifactRollKey> = {
   'HP': 'lHP',
   'ATK': 'lATK',
   'DEF': 'lDEF',
@@ -347,12 +352,20 @@ export const calculateRollDistribution = (
   let hasAllSubstatsCount = 0;
   const total = artifactData.length;
 
+  const artifactHasSubstat = (artifact: ArtifactRollDataItem, sub: string): boolean => {
+    const presenceKey = SUBSTAT_TO_PRESENCE_KEY[sub];
+    return (
+      (presenceKey !== undefined && (artifact[presenceKey] ?? 0) === 1) ||
+      artifact.unactivatedSubstat === sub ||
+      artifact.addedSubstat === sub
+    );
+  };
+
   for (const artifact of artifactData) {
-    const allPresent = selectedSubstats.every(sub => {
-      const key = SUBSTAT_TO_PRESENCE_KEY[sub];
-      return key !== undefined && (artifact[key] ?? 0) === 1;
-    });
-    if (allPresent) hasAllSubstatsCount++;
+    const hasAllChosen = selectedSubstats.every(sub => artifactHasSubstat(artifact, sub));
+    if (!hasAllChosen) continue;
+
+    hasAllSubstatsCount++;
 
     const totalRolls = selectedSubstats.reduce((sum, sub) => {
       const key = SUBSTAT_TO_ROLL_KEY[sub];
@@ -368,7 +381,7 @@ export const calculateRollDistribution = (
     distribution: [0, 1, 2, 3, 4, 5].map(rolls => ({
       rolls,
       count: buckets[rolls] ?? 0,
-      percentage: total > 0 ? ((buckets[rolls] ?? 0) / total) * 100 : 0,
+      percentage: hasAllSubstatsCount > 0 ? ((buckets[rolls] ?? 0) / hasAllSubstatsCount) * 100 : 0,
     })),
     appearancePercentage: total > 0 ? (hasAllSubstatsCount / total) * 100 : 0,
     totalArtifacts: total,
