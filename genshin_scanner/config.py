@@ -5,10 +5,10 @@ SCREEN_HEIGHT = 1440
 # Artifact detail popup region at 2560x1440.
 # These are approximate — run calibrate.py to fine-tune if OCR crops wrong.
 POPUP_REGION = {
-    "left": 538,
-    "top": 72,
-    "width": 380,
-    "height": 695,
+    "left": 948,
+    "top": 210,
+    "width": 660,
+    "height": 651,
 }
 
 # Scores matching the web app (constants.ts)

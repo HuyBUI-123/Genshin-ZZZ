@@ -171,22 +171,31 @@ def _parse_substats(
 ) -> tuple[list[str], str | None]:
     """Extract substats from lines between piece-type and set-name."""
     substats: list[str] = []
-    unactivated: str | None = None
+    has_unactivated = False
 
-    # Skip past piece type + main stat name + main stat value lines (~3 lines)
     start = after_idx + 3
     end = stop_idx if stop_idx > 0 else len(lines)
 
     for line in lines[start:end]:
-        if not line.strip() or _is_noise(line):
+        stripped = line.strip()
+        if not stripped or _is_noise(stripped):
             continue
-        result = _parse_substat_line(line)
+
+        # Standalone "(unactivated)" on its own line — OCR splits it from the substat
+        if re.match(r'^[\(\[]\s*unactivated\s*[\)\]]$', stripped, re.IGNORECASE):
+            has_unactivated = True
+            continue
+
+        result = _parse_substat_line(stripped)
         if result:
             stat, is_un = result
             if is_un:
-                unactivated = stat
-            else:
-                substats.append(stat)
+                has_unactivated = True
+            substats.append(stat)
+
+    # In Genshin the unactivated substat is always last — pop it regardless of
+    # where the "(unactivated)" marker appeared in the OCR output
+    unactivated = substats.pop() if has_unactivated and substats else None
 
     return substats, unactivated
 
