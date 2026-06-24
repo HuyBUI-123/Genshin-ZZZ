@@ -1,0 +1,31 @@
+[
+  {
+    "set": "Marechaussee Hunter",
+    "type": "Plume",
+    "mainStat": "ATK",
+    "numberOfSubstats": 4,
+    "substats": [
+      "DEF",
+      "HP",
+      "ER",
+      "Crit Rate"
+    ],
+    "unactivatedSubstat": null,
+    "score": "Trash",
+    "source": "Strongbox"
+  },
+  {
+    "set": "Marechaussee Hunter",
+    "type": "Sand",
+    "mainStat": "%ATK",
+    "numberOfSubstats": 3,
+    "substats": [
+      "Crit Rate",
+      "ER",
+      "EM"
+    ],
+    "unactivatedSubstat": "Crit DMG",
+    "score": "Excellent",
+    "source": "Strongbox"
+  }
+]

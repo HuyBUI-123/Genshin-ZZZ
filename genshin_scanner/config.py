@@ -1,9 +1,13 @@
+import os
+
+# Final export, ready to upload to the web app (written next to this script)
+EXPORT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts_export.json")
+
 # Target resolution
 SCREEN_WIDTH = 2560
 SCREEN_HEIGHT = 1440
 
 # Artifact detail popup region at 2560x1440.
-# These are approximate — run calibrate.py to fine-tune if OCR crops wrong.
 POPUP_REGION = {
     "left": 948,
     "top": 210,
@@ -14,9 +18,7 @@ POPUP_REGION = {
 # --- "Obtained" frame thumbnail detection ---
 # The 5-star artifact thumbnails have a gold/orange gradient background.
 # We threshold for that color in HSV to find them, regardless of grid layout.
-#
-# Optional region to limit the search to the area where thumbnails appear
-# (avoids picking up other orange UI). Set to None to search the full screen.
+
 OBTAINED_REGION = {
     "left": 2,
     "top": 567,
@@ -37,12 +39,10 @@ THUMB_ROW_TOLERANCE = 40   # px: thumbnails within this Y range count as same ro
 
 # Fill-ratio (extent) = contour area / bounding-box area.
 # A 5-star artifact's gold background is a solid rectangle (~0.9+).
-# Mora and other round gold icons are circles (~0.78), so we reject them.
 THUMB_MIN_EXTENT = 0.82
 
 # --- Click automation ---
-# A safe empty spot to click to dismiss the open detail popup. Must NOT
-# overlap POPUP_REGION, any thumbnail, or a button. Default: dark area far-left.
+# A safe empty spot to click to dismiss the open detail popup.
 POPUP_DISMISS_POINT = (1900, 740)
 
 MOUSE_MOVE_DURATION = 0.15   # seconds for the cursor to glide to a target
