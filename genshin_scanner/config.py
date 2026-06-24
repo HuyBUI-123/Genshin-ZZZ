@@ -40,6 +40,16 @@ THUMB_ROW_TOLERANCE = 40   # px: thumbnails within this Y range count as same ro
 # Mora and other round gold icons are circles (~0.78), so we reject them.
 THUMB_MIN_EXTENT = 0.82
 
+# --- Click automation ---
+# A safe empty spot to click to dismiss the open detail popup. Must NOT
+# overlap POPUP_REGION, any thumbnail, or a button. Default: dark area far-left.
+POPUP_DISMISS_POINT = (1900, 740)
+
+MOUSE_MOVE_DURATION = 0.15   # seconds for the cursor to glide to a target
+POPUP_WAIT = 0.5             # wait after clicking a thumbnail for popup to render
+DISMISS_WAIT = 0.3           # wait after dismissing before the next click
+START_DELAY = 3.0            # countdown after launch to switch to the game
+
 # Scores matching the web app (constants.ts)
 SCORES = [
     "Complete trash",
