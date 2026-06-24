@@ -1,7 +1,60 @@
 import os
+import sys
+import json
 
-# Final export, ready to upload to the web app (written next to this script)
-EXPORT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "artifacts_export.json")
+
+def _app_dir() -> str:
+    """Folder to write output to: next to the .exe when frozen, else this script."""
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+# Final export, ready to upload to the web app (written next to the app)
+EXPORT_FILE = os.path.join(_app_dir(), "artifacts_export.json")
+
+# Small settings file that persists user choices (e.g. last save path)
+# across runs, including in the built .exe.
+SETTINGS_FILE = os.path.join(_app_dir(), "scanner_settings.json")
+
+
+def load_settings() -> dict:
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def save_settings(data: dict) -> None:
+    try:
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except OSError:
+        pass
+
+
+def get_export_path() -> str:
+    """Last-used save path, falling back to the default export file."""
+    return load_settings().get("export_path") or EXPORT_FILE
+
+
+def set_export_path(path: str) -> None:
+    s = load_settings()
+    s["export_path"] = path
+    save_settings(s)
+
+
+def get_source() -> str:
+    """Last-used source, falling back to the default."""
+    val = load_settings().get("source")
+    return val if val in SOURCE_OPTIONS else SOURCE
+
+
+def set_source(value: str) -> None:
+    s = load_settings()
+    s["source"] = value
+    save_settings(s)
 
 # Target resolution
 SCREEN_WIDTH = 2560
@@ -61,8 +114,9 @@ SCORES = [
     "Unknown",
 ]
 
-# Always Strongbox when using this tool
-SOURCE = "Strongbox"
+# Source options the user picks on the start page (must match the web app).
+SOURCE_OPTIONS = ["Strongbox", "Domain farming"]
+SOURCE = "Strongbox"  # default
 
 # Artifact sets (constants.ts)
 ARTIFACT_SETS = [
