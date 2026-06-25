@@ -181,17 +181,16 @@ def _parse_substats(
         if not stripped or _is_noise(stripped):
             continue
 
-        # Standalone "(unactivated)" on its own line — OCR splits it from the substat
-        if re.match(r'^[\(\[]\s*unactivated\s*[\)\]]$', stripped, re.IGNORECASE):
-            has_unactivated = True
-            continue
-
+        # Try to read the line as a substat first (handles the inline).
         result = _parse_substat_line(stripped)
         if result:
             stat, is_un = result
             if is_un:
                 has_unactivated = True
             substats.append(stat)
+        elif "unactivated" in stripped.lower():
+            # just need to know an unactivated one exists.
+            has_unactivated = True
 
     # In Genshin the unactivated substat is always last — pop it regardless of
     # where the "(unactivated)" marker appeared in the OCR output
