@@ -77,6 +77,7 @@ export default function ArtifactUploadForm() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [entries, setEntries] = useState<ValidatedEntry[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
   const [notification, setNotification] = useState<{
     type: "success" | "error";
     message: string;
@@ -119,6 +120,13 @@ export default function ArtifactUploadForm() {
     setEntries(json.map((item, i) => validateEntry(item, i)));
   };
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) void handleFile(f);
+  };
+
   const valid = entries.filter((e) => e.data !== null);
   const invalid = entries.filter((e) => e.data === null);
 
@@ -149,10 +157,25 @@ export default function ArtifactUploadForm() {
         </div>
       )}
 
-      {/* File picker */}
-      <label className="mb-6 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-600 bg-slate-800/50 px-6 py-10 text-center transition-colors hover:border-purple-500">
+      {/* File picker + drop zone */}
+      <label
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragActive(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setDragActive(false);
+        }}
+        onDrop={handleDrop}
+        className={`mb-6 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors ${
+          dragActive
+            ? "border-purple-500 bg-purple-500/10"
+            : "border-gray-600 bg-slate-800/50 hover:border-purple-500"
+        }`}
+      >
         <span className="text-lg font-medium text-gray-200">
-          {fileName ?? "Choose a JSON file"}
+          {fileName ?? "Choose a JSON file or drag it here"}
         </span>
         <span className="mt-1 text-sm text-gray-400">
           Exported from the scanner (artifacts_export.json)
