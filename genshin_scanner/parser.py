@@ -141,13 +141,20 @@ def _parse_substat_line(line: str) -> tuple[str, bool] | None:
     cleaned = re.sub(r"\s*[\(\[]\s*unactivated\s*[\)\]].*", "", cleaned, flags=re.IGNORECASE)
     cleaned = cleaned.strip()
 
-    # Match STAT_NAME+VALUE (with optional %)
-    m = re.match(r"^(.+?)\+(\d+\.?\d*)(%)?\s*$", cleaned)
-    if not m:
+    # Split STAT_NAME+VALUE on the first '+'. We deliberately DON'T parse the
+    # numeric value strictly — OCR often misreads it (e.g. "7.O%" for 7.0%),
+    # and the web app only needs the stat name + whether it's a percentage.
+    if "+" not in cleaned:
+        return None
+    stat_raw, _, value_part = cleaned.partition("+")
+    stat_raw = stat_raw.strip()
+
+    # Sanity gate: a real substat value contains a digit. This rejects set-bonus
+    # / description lines that happen to contain a '+'.
+    if not re.search(r"\d", value_part):
         return None
 
-    stat_raw = m.group(1).strip()
-    is_pct = m.group(3) is not None
+    is_pct = "%" in value_part
     stat = _map_substat(stat_raw, is_pct)
     if stat is None:
         return None
