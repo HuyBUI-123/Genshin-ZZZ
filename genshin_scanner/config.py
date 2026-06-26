@@ -65,7 +65,7 @@ POPUP_REGION = {
     "left": 948,
     "top": 210,
     "width": 660,
-    "height": 651,
+    "height": 738,
 }
 
 # --- "Obtained" frame thumbnail detection ---
