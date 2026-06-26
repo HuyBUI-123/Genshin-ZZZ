@@ -78,23 +78,35 @@ def _normalize(text: str) -> str:
     return text.strip()
 
 
+def _norm(s: str) -> str:
+    """Collapse to lowercase alphanumerics only, so OCR spacing/punctuation
+    noise ("Sands of Eon" vs "SandsofEon") doesn't affect matching."""
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
 def _find_piece_type(lines: list[str]) -> tuple[str | None, int]:
+    # Piece type is one of 5 known strings — match the OCR against them with
+    # spaces/punctuation removed so a dropped space still matches.
     for i, line in enumerate(lines):
+        ln = _norm(line)
+        if not ln:
+            continue
         for key, val in PIECE_TYPES.items():
-            if fuzz.partial_ratio(key.lower(), line.lower()) >= 85:
+            kn = _norm(key)
+            if kn in ln or fuzz.ratio(kn, ln) >= 80:
                 return val, i
     return None, -1
 
 
 def _find_set_name(lines: list[str]) -> tuple[str | None, int]:
+    # Set name is from a known list — same normalized matching.
     for i, line in enumerate(lines):
-        # Set name line ends with ":" in the popup
-        candidate = line.strip().rstrip(":")
-        match, score, _ = process.extractOne(
-            candidate, ARTIFACT_SETS, scorer=fuzz.token_sort_ratio
-        )
-        if score >= 75:
-            return match, i
+        candidate = _norm(line.rstrip(":"))
+        if len(candidate) < 4:
+            continue
+        for s in ARTIFACT_SETS:
+            if fuzz.ratio(_norm(s), candidate) >= 80:
+                return s, i
     return None, -1
 
 

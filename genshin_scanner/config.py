@@ -56,6 +56,11 @@ def set_source(value: str) -> None:
     s["source"] = value
     save_settings(s)
 
+# --- OCR ---
+# Whether to apply the upscale+sharpen preprocessing before OCR. Needed: it
+# preserves spacing in the crisp popup text (off → "Sands of Eon" misreads).
+OCR_PREPROCESS = True
+
 # Target resolution
 SCREEN_WIDTH = 2560
 SCREEN_HEIGHT = 1440
