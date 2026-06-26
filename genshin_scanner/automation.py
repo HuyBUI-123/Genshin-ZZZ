@@ -61,6 +61,18 @@ def scan_all(progress_cb=None) -> list[dict]:
         data["_image"] = popup_img  # kept in memory for the rating UI; not exported
         results.append(data)
 
+        # Echo to the console window (visible in the --console build) so you can
+        # see exactly what the OCR read and how it parsed.
+        print(f"\n===== Artifact {i + 1}/{total} =====")
+        print("--- RAW OCR ---")
+        print(raw)
+        print("--- PARSED ---")
+        print(
+            f"  set={data.get('set')} | type={data.get('type')} | "
+            f"main={data.get('mainStat')} | subs={data.get('substats')} | "
+            f"unact={data.get('unactivatedSubstat')}"
+        )
+
         if progress_cb:
             progress_cb(i + 1, total, data)
 
