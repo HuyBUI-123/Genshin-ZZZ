@@ -120,7 +120,7 @@ SCORES = [
 ]
 
 # Source options the user picks on the start page (must match the web app).
-SOURCE_OPTIONS = ["Strongbox", "Domain farming"]
+SOURCE_OPTIONS = ["Strongbox", "Domain farming", "Stygian Onslaught"]
 SOURCE = "Strongbox"  # default
 
 # Artifact sets (constants.ts)
