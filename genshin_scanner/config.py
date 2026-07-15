@@ -103,9 +103,9 @@ THUMB_MIN_EXTENT = 0.82
 # A safe empty spot to click to dismiss the open detail popup.
 POPUP_DISMISS_POINT = (1900, 740)
 
-MOUSE_MOVE_DURATION = 0.15   # seconds for the cursor to glide to a target
-POPUP_WAIT = 0.5             # wait after clicking a thumbnail for popup to render
-DISMISS_WAIT = 0.3           # wait after dismissing before the next click
+MOUSE_MOVE_DURATION = 0.1   # seconds for the cursor to glide to a target
+POPUP_WAIT = 0.2             # wait after clicking a thumbnail for popup to render
+DISMISS_WAIT = 0.2           # wait after dismissing before the next click
 START_DELAY = 3.0            # countdown after launch to switch to the game
 
 # Scores matching the web app (constants.ts)
