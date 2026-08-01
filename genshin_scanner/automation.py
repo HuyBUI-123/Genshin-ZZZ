@@ -55,11 +55,19 @@ def scan_all(progress_cb=None) -> list[dict]:
     progress_cb(done, total, data) is called after each artifact, if given.
     Returns a list of parsed-artifact dicts (with debug fields).
     """
+    # Trace what the scan is doing
+    print("\n[scan] capturing screen...", flush=True)
     screen = capture_full_screen()
+    print("[scan] detecting thumbnails...", flush=True)
     thumbs = detect_thumbnails(screen)
 
     results: list[dict] = []
     total = len(thumbs)
+
+    # Always report the count so a 0-detection scan isn't a silent no-op.
+    print(f"[scan] detected {total} thumbnail(s) in the Obtained frame.", flush=True)
+    if total == 0:
+        print("Nothing to scan")
 
     for i, t in enumerate(thumbs):
         # Click the thumbnail

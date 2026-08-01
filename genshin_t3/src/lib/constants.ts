@@ -114,5 +114,7 @@ export const artifactConfig = {
     "Aubade of Morningstar and Moon",
     "Celestial Gift",
     "Disenchantment in Deep Shadow",
+    "Scarlet Proof",
+    "Heart of the Furnace",
   ],
 };
