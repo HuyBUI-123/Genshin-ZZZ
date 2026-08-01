@@ -103,6 +103,9 @@ THUMB_MIN_EXTENT = 0.82
 # A safe empty spot to click to dismiss the open detail popup.
 POPUP_DISMISS_POINT = (1900, 740)
 
+# Press this key at any time during a scan to abort it (the window reappears).
+ABORT_KEY = "`"
+
 MOUSE_MOVE_DURATION = 0.1   # seconds for the cursor to glide to a target
 POPUP_WAIT = 0.2             # wait after clicking a thumbnail for popup to render
 DISMISS_WAIT = 0.2           # wait after dismissing before the next click

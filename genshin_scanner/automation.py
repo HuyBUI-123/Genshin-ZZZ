@@ -7,16 +7,36 @@ between each one before the next click lands on a thumbnail):
     click thumbnail -> wait -> capture+OCR popup -> dismiss popup -> next
 """
 import time
+import threading
 import mss
 import pyautogui
+import keyboard
 from PIL import Image
 
 import config
 from detector import detect_thumbnails
 from ocr import extract_from_image, capture_popup
 
-# Move mouse to a screen corner to abort the whole run at any time.
-pyautogui.FAILSAFE = True
+# Abort via a global key instead
+pyautogui.FAILSAFE = False
+
+# Set when the user presses the abort key during a scan.
+_abort_event = threading.Event()
+
+
+def _arm_abort() -> None:
+    _abort_event.clear()
+    try:
+        keyboard.add_hotkey(config.ABORT_KEY, _abort_event.set)
+    except Exception as e:  # noqa: BLE001 — keep scanning even if the bind fails
+        print(f"[scan] could not bind abort key '{config.ABORT_KEY}': {e}", flush=True)
+
+
+def _disarm_abort() -> None:
+    try:
+        keyboard.remove_hotkey(config.ABORT_KEY)
+    except (KeyError, ValueError):
+        pass
 
 
 def _primary_monitor(sct) -> dict:
@@ -69,37 +89,47 @@ def scan_all(progress_cb=None) -> list[dict]:
     if total == 0:
         print("Nothing to scan")
 
-    for i, t in enumerate(thumbs):
-        # Click the thumbnail
-        pyautogui.moveTo(t["x"], t["y"], duration=config.MOUSE_MOVE_DURATION)
-        pyautogui.click()
-        time.sleep(config.POPUP_WAIT)
+    _arm_abort()
+    print(f"[scan] press '{config.ABORT_KEY}' to abort.", flush=True)
+    try:
+        for i, t in enumerate(thumbs):
+            if _abort_event.is_set():
+                print(f"[scan] aborted by user after {len(results)} artifact(s).",
+                      flush=True)
+                break
 
-        # Read the popup
-        popup_img = capture_popup()
-        data, raw = extract_from_image(popup_img)
-        data["_index"] = i
-        data["_click"] = (t["x"], t["y"])
-        data["_image"] = popup_img  # kept in memory for the rating UI; not exported
-        results.append(data)
+            # Click the thumbnail
+            pyautogui.moveTo(t["x"], t["y"], duration=config.MOUSE_MOVE_DURATION)
+            pyautogui.click()
+            time.sleep(config.POPUP_WAIT)
 
-        # Echo to the console window (visible in the --console build) so you can
-        # see exactly what the OCR read and how it parsed.
-        print(f"\n===== Artifact {i + 1}/{total} =====")
-        print("--- RAW OCR ---")
-        print(raw)
-        print("--- PARSED ---")
-        print(
-            f"  set={data.get('set')} | type={data.get('type')} | "
-            f"main={data.get('mainStat')} | subs={data.get('substats')} | "
-            f"unact={data.get('unactivatedSubstat')}"
-        )
+            # Read the popup
+            popup_img = capture_popup()
+            data, raw = extract_from_image(popup_img)
+            data["_index"] = i
+            data["_click"] = (t["x"], t["y"])
+            data["_image"] = popup_img  # kept in memory for the rating UI; not exported
+            results.append(data)
 
-        if progress_cb:
-            progress_cb(i + 1, total, data)
+            # Echo to the console window (visible in the --console build) so you
+            # can see exactly what the OCR read and how it parsed.
+            print(f"\n===== Artifact {i + 1}/{total} =====")
+            print("--- RAW OCR ---")
+            print(raw)
+            print("--- PARSED ---")
+            print(
+                f"  set={data.get('set')} | type={data.get('type')} | "
+                f"main={data.get('mainStat')} | subs={data.get('substats')} | "
+                f"unact={data.get('unactivatedSubstat')}"
+            )
 
-        # Dismiss so the next thumbnail isn't hidden behind the popup
-        _dismiss_popup()
+            if progress_cb:
+                progress_cb(i + 1, total, data)
+
+            # Dismiss so the next thumbnail isn't hidden behind the popup
+            _dismiss_popup()
+    finally:
+        _disarm_abort()
 
     return results
 
