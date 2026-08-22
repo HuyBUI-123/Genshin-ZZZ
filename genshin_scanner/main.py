@@ -12,12 +12,16 @@ Run from an ADMINISTRATOR terminal.
 """
 import json
 import threading
+import faulthandler
 
 import customtkinter as ctk
 from PIL import Image
 
 import config
 from automation import scan_all
+
+# Dump all thread stacks on a hard crash, so a freeze is never a black box.
+faulthandler.enable()
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -106,8 +110,11 @@ class ScannerApp(ctk.CTk):
             )
             self.after(1000, lambda: self._countdown(remaining - 1))
         else:
-            self.status_label.configure(text="Scanning... (mouse to a corner aborts)")
+            self.status_label.configure(text=f"Scanning... (press '{config.ABORT_KEY}' to abort)")
             self.iconify()  # minimize so the game keeps focus during automation
+            # If the scan freezes, dump every thread's stack every 20s so we can
+            # see exactly where it's stuck (cancelled when the scan finishes).
+            faulthandler.dump_traceback_later(20, repeat=True)
             threading.Thread(target=self._run_scan, daemon=True).start()
 
     def _run_scan(self):
@@ -119,11 +126,13 @@ class ScannerApp(ctk.CTk):
         self.after(0, lambda: self._scan_done(results))
 
     def _scan_failed(self, msg):
+        faulthandler.cancel_dump_traceback_later()
         self.deiconify()
         self.scan_btn.configure(state="normal")
         self.status_label.configure(text=f"Scan failed: {msg}")
 
     def _scan_done(self, results):
+        faulthandler.cancel_dump_traceback_later()
         self.deiconify()
         self.lift()
         self.results = results
